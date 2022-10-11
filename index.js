@@ -3,6 +3,8 @@ const TelegramBot = require("node-telegram-bot-api");
 const { getWeatherByCity, getForecastByCity } = require("./api.js");
 const { defineIconByWeather } = require("./utilities.js");
 
+const text = require("./text.json");
+
 // replace the value below with the Telegram token you receive from @BotFather
 const token = process.env.telegram_token;
 
@@ -27,18 +29,18 @@ bot.onText(/\/echo (.+)/, (msg, match) => {
 
 function initBot() {
   bot.setMyCommands([
-    { command: "/weather", description: "check the weather" },
+    { command: "/weather", description: text.commands.weather },
   ]);
 }
 
 function weatherOptions(chatId) {
-  bot.sendMessage(chatId, "choose option", {
+  bot.sendMessage(chatId, text.messages.choose, {
     reply_markup: {
       resize_keyboard: true,
       one_time_keyboard: true,
       keyboard: [
-        ["check weather by city"],
-        ["get weather forecast fo specific city"],
+        [text.messages.check_weather.current],
+        [text.messages.check_weather.forecast],
       ],
     },
   });
@@ -50,73 +52,64 @@ bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   if (msg.text && msg.text === "/start") {
     initBot();
-    bot.sendMessage(
-      chatId,
-      "in menu below you can click on command  `/weather` and get list of avalailable countries where you can check wetcher"
-    );
+    bot.sendMessage(chatId, text.messages.start_message);
   }
 
   if (msg.text && msg.text === "/weather") {
     weatherOptions(chatId);
   }
 
-  if (msg.text && msg.text === "check weather by city") {
+  if (msg.text && msg.text === text.messages.check_weather.current) {
     checkWeatherByCity = true;
-    bot.sendMessage(chatId, "type city");
+    bot.sendMessage(chatId, text.messages.type_city);
   } else if (checkWeatherByCity) {
     try {
       const data = await getWeatherByCity(msg.text);
-       bot.sendMessage(
+      bot.sendMessage(
         chatId,
         `the current  temperature is ${data.temp} ${defineIconByWeather(
           data.temp
         )}`
-      ); 
+      );
       console.log(data);
     } catch (e) {
       if (e instanceof TypeError) {
-        bot.sendMessage(chatId, "invalid city");
+        bot.sendMessage(chatId, text.messages.invalid_city);
       } else {
         throw e;
       }
     } finally {
       checkWeatherByCity = false;
-      bot.sendMessage(
-        chatId,
-        "in menu below you can click on command  `/weather` and get list of avalailable countries where you can check wetcher"
-      );
+      bot.sendMessage(chatId, text.messages.start_message);
     }
   }
 
-  if (msg.text && msg.text === "get weather forecast fo specific city") {
+  if (msg.text && msg.text === text.messages.check_weather.forecast) {
     getForecast = true;
-    bot.sendMessage(chatId, "type city");
+    bot.sendMessage(chatId, text.messages.type_city);
   } else if (getForecast) {
     try {
-      let text = ""
+      let text = "";
       const data = await getForecastByCity(msg.text);
-      data.forEach(day => {
-        text += `on date ${day.datetime} max temperature is ${day.max_temp} ${defineIconByWeather(day.max_temp)} and min is ${day.min_temp} ${defineIconByWeather(day.min_temp)} \n`
-      })
-      bot.sendMessage(
-        chatId,
-        text 
-      ); 
-      
+      data.forEach((day) => {
+        text += `on date ${day.datetime} max temperature is ${
+          day.max_temp
+        } ${defineIconByWeather(day.max_temp)} and min is ${
+          day.min_temp
+        } ${defineIconByWeather(day.min_temp)} \n`;
+      });
+      bot.sendMessage(chatId, text);
     } catch (e) {
       if (e instanceof TypeError) {
-        bot.sendMessage(chatId, "invalid city");
+        bot.sendMessage(chatId, text.messages.invalid_city);
       } else {
-        console.log(e)
+        console.log(e);
 
         throw e;
       }
     } finally {
       getForecast = false;
-      bot.sendMessage(
-        chatId,
-        "in menu below you can click on command  `/weather` and get list of avalailable countries where you can check wetcher"
-      );
+      bot.sendMessage(chatId, text.messages.start_message);
     }
   }
 

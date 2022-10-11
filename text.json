@@ -1,0 +1,15 @@
+{
+    "messages" : {
+        "check_weather": {
+            "current" : "check weather by city",
+            "forecast": "get weather forecast fo specific city"
+        },
+        "choose": "choose option",
+        "type_city": "type city",
+        "start_message": "in menu below you can click on command  `/weather` and get list of avalailable actions",
+        "invalid_city": "invalid city"
+    },
+    "commands" : {
+        "weather" : "check the weather"
+    }
+}
